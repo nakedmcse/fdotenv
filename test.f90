@@ -4,7 +4,8 @@ program test
     implicit none
 
     ! Tests
-    ! TODO: Call tests
+    call test_load()
+    call test_string()
 
     contains
         subroutine assert(condition, message)
@@ -15,6 +16,14 @@ program test
                 error stop
             end if
         end subroutine assert
+
+        subroutine test_load()
+            print *,"Test Load TO BE IMPLEMENTED"
+        end subroutine test_load
+
+        subroutine test_string()
+            print *,"Test String TO BE IMPLEMENTED"
+        end subroutine test_string
 
         ! TODO: Implement tests
 end program test

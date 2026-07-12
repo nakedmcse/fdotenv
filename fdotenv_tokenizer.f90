@@ -40,7 +40,7 @@ module fdotenv_tokenizer
                 if (nl .and. s(pos:pos) == char(10)) exit
                 pos = pos + 1
             end do
-        end subroutine next_newline
+        end subroutine next_given
 
         subroutine next_triple(s, pos, t)
             character(len=*), intent(in) :: s
@@ -89,7 +89,7 @@ module fdotenv_tokenizer
                         start = pos + 3
                         pos = pos + 3
                         call next_triple(s, pos, '"""')
-                        tok%text = s(start:pos)
+                        tok%text = s(start:pos-1)
                         pos = pos + 3
                         return
                     end if
@@ -98,7 +98,7 @@ module fdotenv_tokenizer
                     pos = pos + 1
                     call next_given(s,pos,'"',.true.)
                     if (s(pos:pos) == char(10)) tok%kind = fdotenv_token_type_error
-                    tok%text = s(start:pos)
+                    tok%text = s(start:pos-1)
                     pos = pos + 1
                     return
                 case ("'")
@@ -107,7 +107,7 @@ module fdotenv_tokenizer
                         start = pos
                         pos = pos + 3
                         call next_triple(s, pos, "'''")
-                        tok%text = s(start:pos)
+                        tok%text = s(start:pos-1)
                         pos = pos + 3
                         return
                     end if
@@ -116,14 +116,14 @@ module fdotenv_tokenizer
                     pos = pos + 1
                     call next_given(s,pos,"'",.true.)
                     if (s(pos:pos) == char(10)) tok%kind = fdotenv_token_type_error
-                    tok%text = s(start:pos)
+                    tok%text = s(start:pos-1)
                     pos = pos + 1
                     return
                 case default
                     tok%kind = fdotenv_token_type_string
                     start = pos
                     call next_break(s,pos)
-                    tok%text = s(start:pos)
+                    tok%text = s(start:pos-1)
                     return
             end select
         end subroutine fdotenv_next_token
