@@ -25,7 +25,8 @@ contains
     subroutine get_token_stream(s, stream)
         character(len=*), intent(in) :: s
         type(token_stream), intent(inout) :: stream
-        integer :: pos = 1
+        integer :: pos
+        pos = 1
         do while (stream%token_count <= 40)
             call fdotenv_next_token(s,pos,stream%results(stream%token_count))
             if (stream%results(stream%token_count)%kind == fdotenv_token_type_eof) exit
@@ -93,7 +94,6 @@ contains
         call get_token_stream(s2,e2)
 
         ! Then
-        print *,e1%token_count
         call assert(e1%token_count == 4, "E1 token count wrong - should be 4")
         call assert(e1%results(1)%kind == fdotenv_token_type_string, "E1 token 1 type wrong - should be string")
         call assert(e1%results(1)%text == "var1", "E1 token 1 text wrong - " // e1%results(1)%text)
