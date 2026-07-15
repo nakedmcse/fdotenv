@@ -63,7 +63,44 @@ module fdotenv
             character(len=*), intent(in) :: s
             type(fdotenv_vars), intent(inout) :: vars
             type(fdotenv_status), intent(inout) :: status
-            ! TODO: Loop tokens, parse
+            type(fdotenv_token_t) :: next_token
+            type(fdotenv_kv) :: current_kv
+            integer :: pos
+            logical :: done, seen_equals
+            done = .false.
+            seen_equals = .false.
+            pos = 1
+            do while (.not. done)
+                call fdotenv_next_token(s, pos, next_token)
+                select case (next_token%kind)
+                    case (fdotenv_token_type_error)
+                        done = .true.
+                        status%error = .true.
+                        status%offset = pos
+
+                    case (fdotenv_token_type_eof)
+                        done = .true.
+
+                    case (fdotenv_token_type_newline)
+                        if (allocated(current_kv%key) .and. allocated(current_kv%value)) call vars%fdotenv_vars_append(current_kv)
+                        if (allocated(current_kv%key)) deallocate(current_kv%key)
+                        if (allocated(current_kv%value)) deallocate(current_kv%value)
+                        seen_equals = .false.
+
+                    case (fdotenv_token_type_equals)
+                        seen_equals = .true.
+
+                    case (fdotenv_token_type_string)
+                        if (seen_equals) then
+                            current_kv%value = next_token%text
+                        else
+                            current_kv%key = next_token%text
+                        end if
+
+                    ! TODO: Fill in rest of tokens
+                end select
+            end do
+            ! TODO: Handle replacements in variables
         end subroutine fdotenv_parse_string
 
         subroutine fdotenv_load(f, status)
