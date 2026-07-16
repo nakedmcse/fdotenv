@@ -97,7 +97,32 @@ module fdotenv
                             current_kv%key = next_token%text
                         end if
 
-                    ! TODO: Fill in rest of tokens
+                    case (fdotenv_token_type_hash)
+                        ! Comment, do nothing
+
+                    case (fdotenv_token_type_single_quote, fdotenv_token_type_single_quote_triple)
+                        if (seen_equals .and. allocated(current_kv%key)) then
+                            current_kv%singleQuoted = .true.
+                            current_kv%value = next_token%text
+                            call vars%fdotenv_vars_append(current_kv)
+                            deallocate(current_kv%key)
+                            deallocate(current_kv%value)
+                            current_kv%singleQuoted = .false.
+                            seen_equals = .false.
+                        end if
+
+                    case (fdotenv_token_type_double_quote, fdotenv_token_type_double_quote_triple)
+                    if (seen_equals .and. allocated(current_kv%key)) then
+                        current_kv%singleQuoted = .false.
+                        current_kv%value = next_token%text
+                        call vars%fdotenv_vars_append(current_kv)
+                        deallocate(current_kv%key)
+                        deallocate(current_kv%value)
+                        seen_equals = .false.
+                    end if
+
+                    case default
+                        ! Unknown token, do nothing
                 end select
             end do
             ! TODO: Handle replacements in variables
