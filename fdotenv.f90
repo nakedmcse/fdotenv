@@ -112,14 +112,14 @@ module fdotenv
                         end if
 
                     case (fdotenv_token_type_double_quote, fdotenv_token_type_double_quote_triple)
-                    if (seen_equals .and. allocated(current_kv%key)) then
-                        current_kv%singleQuoted = .false.
-                        current_kv%value = next_token%text
-                        call vars%fdotenv_vars_append(current_kv)
-                        deallocate(current_kv%key)
-                        deallocate(current_kv%value)
-                        seen_equals = .false.
-                    end if
+                        if (seen_equals .and. allocated(current_kv%key)) then
+                            current_kv%singleQuoted = .false.
+                            current_kv%value = next_token%text
+                            call vars%fdotenv_vars_append(current_kv)
+                            deallocate(current_kv%key)
+                            deallocate(current_kv%value)
+                            seen_equals = .false.
+                        end if
 
                     case default
                         ! Unknown token, do nothing
