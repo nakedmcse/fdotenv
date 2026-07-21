@@ -174,7 +174,6 @@ module fdotenv
                         done = .true.
 
                     case (fdotenv_token_type_newline)
-                        if (allocated(current_kv%key) .and. allocated(current_kv%value)) call vars%fdotenv_vars_append(current_kv)
                         if (allocated(current_kv%key)) deallocate(current_kv%key)
                         if (allocated(current_kv%value)) deallocate(current_kv%value)
                         seen_equals = .false.
@@ -185,6 +184,10 @@ module fdotenv
                     case (fdotenv_token_type_string)
                         if (seen_equals) then
                             current_kv%value = next_token%text
+                            current_kv%singleQuoted = .false.
+                            call vars%fdotenv_vars_append(current_kv)
+                            deallocate(current_kv%key)
+                            deallocate(current_kv%value)
                         else
                             current_kv%key = next_token%text
                         end if
@@ -224,7 +227,7 @@ module fdotenv
                         call fdotenv_expand(vars%items(i)%value, replaced)
                         call move_alloc(vars%items(i)%value, replaced)
                     end if
-                    ier = setenv(vars%items(i)%key // c_null_char, vars%items(i)%value // c_null_char)
+                    ier = setenv(vars%items(i)%key // c_null_char, vars%items(i)%value // c_null_char, 1)
                 end do
             end if
         end subroutine fdotenv_parse_string
