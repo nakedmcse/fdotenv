@@ -225,7 +225,7 @@ module fdotenv
                 do i=1, vars%count
                     if (.not. vars%items(i)%singleQuoted) then
                         call fdotenv_expand(vars%items(i)%value, replaced)
-                        call move_alloc(vars%items(i)%value, replaced)
+                        call move_alloc(replaced, vars%items(i)%value)
                     end if
                     ier = setenv(vars%items(i)%key // c_null_char, vars%items(i)%value // c_null_char, 1)
                 end do
