@@ -139,12 +139,12 @@ module fdotenv
             if (io_stat /= 0 .or. file_size <= 0) return
 
             allocate(character(len=file_size) :: t)
-            open(newunit=iunit, file=f, status='old', action='read', iostat=io_stat)
+            open(newunit=iunit, file=f, status='old', action='read', access='stream', form='unformatted', iostat=io_stat)
             if (io_stat /= 0) then
                 deallocate(t)
                 return
             end if
-            read(iunit, fmt='(A)', advance='no', iostat=io_stat) t
+            read(iunit, iostat=io_stat) t
             close(iunit)
         end subroutine fdotenv_read_file
 
@@ -239,6 +239,6 @@ module fdotenv
             type(fdotenv_vars) :: vars
 
             call fdotenv_read_file(f,s)
-            call fdotenv_parse_string(s,vars, status)
+            call fdotenv_parse_string(s,vars,status)
         end subroutine fdotenv_load
 end module fdotenv

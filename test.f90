@@ -18,21 +18,49 @@ program test
         end subroutine assert
 
         subroutine test_load()
-            print *,"Test Load TO BE IMPLEMENTED"
+            ! Given
+            character(len=20) :: buffer
+            integer :: status
+            type(fdotenv_status) :: status_parse
+
+            ! When
+            call fdotenv_load(".env.example",status_parse)
+
+            ! Then
+            call assert(.not. status_parse%error, "Load parse should not return error status")
+            call get_environment_variable(name="var1",value=buffer,status=status)
+            call assert(status == 0, "Load parse environment variable 1 missing")
+            call assert(trim(buffer) == "one", "Load parse environment variable 1 should be one: " // trim(buffer))
+            call get_environment_variable(name="var2",value=buffer,status=status)
+            call assert(status == 0, "Load parse environment variable 2 missing")
+            call assert(trim(buffer) == "double quoted", "Load parse environment variable 2 should be 'double quoted': " // trim(buffer))
+            call get_environment_variable(name="var3",value=buffer,status=status)
+            call assert(status == 0, "Load parse environment variable 3 missing")
+            call assert(trim(buffer) == "one@example", "Load parse environment variable 3 should be one@example: " // trim(buffer))
+            call get_environment_variable(name="var4",value=buffer,status=status)
+            call assert(status == 0, "Load parse environment variable 4 missing")
+            call assert(trim(buffer) == "${var1}@example", "Load parse environment variable 4 should be ${var1}@example: " // trim(buffer))
+            call get_environment_variable(name="var5",value=buffer,status=status)
+            call assert(status == 0, "Load parse environment variable 5 missing")
+            call assert(trim(buffer) == char(10) // "one" // char(10) // "two" // char(10) // "three" // char(10), "Load parse environment variable 5 should be c10/one/c10/two/c10/three/c10: " // trim(buffer))
+
+            print *,"Test Load Completed"
         end subroutine test_load
 
         subroutine test_string()
             ! Given
             character(len=*), parameter :: s_simple = 'var1=one' // char(10) // 'var2=two' // char(10) // "var3='three'"
             character(len=*), parameter :: s_replacement = 'name=myname' // char(10) // 'email=${name}@email.com'
+            character(len=*), parameter :: s_triple = "var4='''" // char(10) // 'one' // char(10) // 'two' // char(10) // "'''"
             character(len=20) :: buffer
             integer :: status
-            type(fdotenv_vars) :: vars_simple, vars_replacement
-            type(fdotenv_status) :: status_simple, status_replacement
+            type(fdotenv_vars) :: vars_simple, vars_replacement, vars_triple
+            type(fdotenv_status) :: status_simple, status_replacement, status_triple
 
             ! When
             call fdotenv_parse_string(s_simple, vars_simple, status_simple)
             call fdotenv_parse_string(s_replacement, vars_replacement, status_replacement)
+            call fdotenv_parse_string(s_triple, vars_triple, status_triple)
 
             ! Then
             call assert(.not. status_simple%error, "Simple string parse should not return error status")
@@ -64,8 +92,14 @@ program test
             call assert(status == 0, "Replacement string parse environment variable email missing")
             call assert(trim(buffer) == "myname@email.com", "Repalcement string parse environment variable email should be myname@emauil.com: " // trim(buffer))
 
+            call assert(.not. status_triple%error, "Triple string parse should not return error status")
+            call assert(vars_triple%count == 1, "Triple string parse should return 1 variable")
+            call assert(vars_triple%items(1)%key == "var4", "Triple string parse key 1 should be var4: " // vars_triple%items(1)%key)
+            call assert(vars_triple%items(1)%value == char(10) // "one" // char(10) // "two" // char(10), "Triple string parse value 1 should be c10/one/c10/two/c10: " // vars_triple%items(1)%value)
+            call assert(vars_triple%items(1)%singleQuoted, "Triple string parse key 1 should be single quoted")
+            call get_environment_variable(name="var4",value=buffer,status=status)
+            call assert(status == 0, "Triple string parse environment variable 4 missing")
+            call assert(trim(buffer) == char(10) // "one" // char(10) // "two" // char(10), "Triple string parse environment variable 4 should be c10/one/c10/two/c10: " // trim(buffer))
             print *,"Test String Completed"
         end subroutine test_string
-
-        ! TODO: Implement tests
 end program test

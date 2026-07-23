@@ -105,13 +105,12 @@ module fdotenv_tokenizer
                 case ("'")
                     if (pos + 2 <= len(s) .and. s(pos:pos+2) == "'''") then
                         tok%kind = fdotenv_token_type_single_quote_triple
-                        start = pos
+                        start = pos + 3
                         pos = pos + 3
                         call next_triple(s, pos, "'''")
                         if (pos + 3 > len(s) .and. .not. s(pos:pos) == "'") tok%kind = fdotenv_token_type_error
                         tok%text = s(start:pos-1)
                         pos = pos + 3
-                        if (pos > len(s)) tok%kind = fdotenv_token_type_error
                         return
                     end if
                     tok%kind = fdotenv_token_type_single_quote
